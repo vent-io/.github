@@ -18,9 +18,9 @@ name: Lint Code Base
 
 on:
   push:
-    branches-ignore: [main]
+    branches-ignore: [$default-branch]
   pull_request:
-    branches: [main]
+    branches: [$default-branch]
 
 ###############
 # Set the Job #
@@ -52,6 +52,13 @@ jobs:
       - name: Lint Code Base
         uses: github/super-linter@v4
         env:
+          # Only new or edited files will be linted
           VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: main
+          DEFAULT_BRANCH: $default-branch
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # By default any language will be linted
+
+          # FOR JAVA WITH CUSTOM CONFIGURATION
+          # JAVA_FILE_NAME: checkstyle.xml
+          # FOR TYPESCRIPT WITH CUSTOM CONFIGURATION
+          # TYPESCRIPT_ES_CONFIG_FILE: .eslintrc.json
