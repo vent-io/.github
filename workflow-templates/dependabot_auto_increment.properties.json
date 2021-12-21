@@ -1,0 +1,4 @@
+{
+    "name": "Dependabot Auto increment npm",
+    "description": "This workflow will add a commit with a patch version increase to the pull request created by dependabot"
+}
