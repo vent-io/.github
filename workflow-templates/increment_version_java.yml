@@ -1,0 +1,110 @@
+name: "Increment maven project version"
+# This workflow will increment the maven project version by checking the lables of the PR
+on:
+  pull_request_target:
+    branches: [ $default-branch ]
+    types: [closed]
+
+jobs:
+  getVersion:
+    # Will check which version number to increase
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      # The output is one valid output of the steps
+      # Here the increment precheck script checks if only one tag is applied
+      version: ${{steps.major.outputs.version || steps.minor.outputs.version || steps.patch.outputs.version}}
+    steps:
+      # Check if major
+      - id: major
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'Major')}}
+        name: Version Major
+        run: |
+          echo "Increase major version"
+          echo "::set-output name=version::major"
+        # Check if minor
+      - id: minor
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'Minor')}}
+        name: Version Minor
+        run: |
+          echo "Increase minor version"
+          echo "::set-output name=version::minor"
+        # Check if patch
+      - id: patch
+        name: Version Patch
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'Patch')}}
+        run: |
+          echo "Increase patch version"
+          echo "::set-output name=version::patch"
+  generateNewVersion:
+    # This part of the workflow will generate the new version tag
+    runs-on: ubuntu-latest
+    needs: getVersion
+    outputs:
+      # This output will be one of the major, minor, patch steps outputs. Only one will be run, so only one output will be set
+      nextVersion: ${{ steps.major.outputs.nextVersion || steps.minor.outputs.nextVersion || steps.patch.outputs.nextVersion }}
+    steps:
+      # Checkout the source code to get the tags. fetch-depth must be set to 0 otherwise no tags can be extracted
+      - uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+        # Will find the latest tag in the main branch
+        # A fallback of 0.0.0 is given
+      - name: "Get previous tag"
+        id: previoustag
+        uses: "WyriHaximus/github-action-get-previous-tag@v1"
+        with:
+          fallback: 0.0.0
+        # Will increment the given version parameter and provide variations of new labels as output
+      - name: "Get next version generator"
+        id: semvers
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ steps.previoustag.outputs.tag }}
+      - id: major
+        if: ${{ needs.getVersion.outputs.version == 'major'}}
+        run: echo "::set-output name=nextVersion::${{steps.semvers.outputs.v_major}}"
+      - id: minor
+        if: ${{ needs.getVersion.outputs.version == 'minor'}}
+        run: echo "::set-output name=nextVersion::${{steps.semvers.outputs.v_minor}}"
+      - id: patch
+        if: ${{ needs.getVersion.outputs.version == 'patch'}}
+        run: echo "::set-output name=nextVersion::${{steps.semvers.outputs.v_patch}}"
+  incrementVersion:
+    # This part of the workflow will increment the maven project version and add a git tag to it
+    runs-on: ubuntu-latest
+    needs: generateNewVersion
+    steps:
+      - uses: actions/checkout@v2
+      # Setup jdk
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: "11"
+          distribution: "adopt"
+      - name: Echo Tag
+        run: echo "Next version is ${{ needs.generateNewVersion.outputs.nextVersion }}"
+        # Check out main branch
+      - name: Pull branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git checkout main
+        # increment version on main branch
+      - name: Increment maven version
+        run: mvn versions:set -DnewVersion=${{ needs.generateNewVersion.outputs.nextVersion }}
+        # Configure git for the commit
+      - name: Git config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+        # Commit the version change and push it
+      - name: Add changes to commit
+        run: |
+          git add -u
+          git commit -a -m 'Incremented version to ${{ needs.generateNewVersion.outputs.nextVersion }}'
+          git push
+        # Add a new git tag to the new commit
+      - name: Add new git tag
+        run: |
+          git tag ${{ needs.generateNewVersion.outputs.nextVersion }}
+          git push origin --tags

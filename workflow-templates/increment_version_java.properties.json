@@ -1,0 +1,4 @@
+{
+    "name":"[JAVA] Increment version number",
+    "description": "Use this workflow in conjunction with Increment PreCheck to increment the project version on a successful pull request"
+}
