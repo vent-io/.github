@@ -1,0 +1,4 @@
+{
+    "name": "Increment version PreCheck",
+    "description": "Use this workflow in conjunction with increment version java. Don't forget to add the labels \"Majro\", \" Minor\", \"Patch\""
+}
