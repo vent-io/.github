@@ -1,4 +1,4 @@
 {
-    "name": "Java tests",
+    "name": "[JAVA] tests",
     "description": "Run java tests trough the maven test command"
 }
