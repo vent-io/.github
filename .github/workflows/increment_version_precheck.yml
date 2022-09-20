@@ -1,0 +1,24 @@
+name: Increment version Pre-check
+
+on:
+  workflow_call:
+    
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # Only one label must be given to the PR
+      - name: Fail not exclusive
+        if: ${{(contains(github.event.pull_request.labels.*.name, 'Major') && contains(github.event.pull_request.labels.*.name, 'Minor')) || (contains(github.event.pull_request.labels.*.name, 'Major') && contains(github.event.pull_request.labels.*.name, 'Patch')) || (contains(github.event.pull_request.labels.*.name, 'Minor') && contains(github.event.pull_request.labels.*.name, 'Patch'))}}
+        run: |
+          echo "::error:: Version label is not exclusive. Please only use one"
+          exit 1
+        # At least one label must be given to the PR
+      - name: Fail no label
+        if: ${{!contains(github.event.pull_request.labels.*.name, 'Major') && !contains(github.event.pull_request.labels.*.name, 'Minor') && !contains(github.event.pull_request.labels.*.name, 'Patch')}}
+        run: |
+          echo "::error:: Please use a version label for this pull request"
+          exit 1
+        # A debug output of the given tags
+      - name: Get labels
+        run: echo ${{ join(github.event.pull_request.labels.*.name) }}
