@@ -1,0 +1,7 @@
+{
+    "name": "Precheck environment label",
+    "description": "This workflow checks a pull request for the existence of at least one of the following labels: \"Prod\", \"Uat\", \"Dev\"",
+    "categories": [
+        "Precheck"
+    ]
+}

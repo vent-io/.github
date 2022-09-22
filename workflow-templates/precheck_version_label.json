@@ -1,0 +1,7 @@
+{
+    "name": "Precheck version label",
+    "description": "This workflow checks a pull request for the existence of exactly one of the following labels: \"Major\", \"Minor\", \"Patch\"",
+    "categories": [
+        "Precheck"
+    ]
+}
