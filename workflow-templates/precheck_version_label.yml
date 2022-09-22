@@ -7,5 +7,4 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
     uses: vent-io/vent-io/.github/workflows/precheck_version_label.yaml@main
