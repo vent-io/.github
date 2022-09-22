@@ -1,4 +1,4 @@
-name: Precheck increment label
+name: Precheck environment label
 
 on:
   pull_request:
