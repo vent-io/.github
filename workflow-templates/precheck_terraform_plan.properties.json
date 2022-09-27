@@ -1,0 +1,7 @@
+{
+    "name": "Precheck terraform plan",
+    "description": "This action runs a terraform plan action. A service principal with federated credentials is needed.",
+    "categories": [
+        "terraform"
+    ]
+}
