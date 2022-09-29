@@ -11,6 +11,7 @@ jobs:
     uses: vent-io/vent-io/.github/workflows/precheck_terraform_plan.yaml
     with:
       working_dir: ./
+      env: dev
   print_summary:
     runs-on: ubuntu-latest
     needs: plan
